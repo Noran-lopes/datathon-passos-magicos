@@ -83,15 +83,14 @@ except:
 # MENU
 # =============================================================
 
-st.sidebar.title("🎓 Passos Mágicos")
-
 pagina = st.sidebar.radio(
     "Menu",
     [
         "🏠 Visão Executiva",
         "📊 Diagnóstico Educacional",
         "🤖 Predição de Risco",
-        "💡 Insights Estratégicos"
+        "💡 Insights Estratégicos",
+        "📚 Dicionário PEDE"
     ]
 )
 
@@ -509,3 +508,134 @@ Recomendações:
 5. Trabalhar percepção acadêmica dos alunos
 """
     )
+
+
+# =============================================================
+# DICIONÁRIO
+# =============================================================
+
+elif pagina == "📚 Dicionário PEDE":
+
+    st.title("📚 Dicionário dos Indicadores PEDE")
+
+    st.markdown("""
+    Esta seção apresenta os principais indicadores utilizados
+    pela Passos Mágicos para acompanhamento dos alunos.
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.info("""
+### 📈 INDE
+**Índice de Desenvolvimento Educacional**
+
+Indicador consolidado que representa o desempenho global do aluno.
+""")
+
+        st.info("""
+### 📚 IDA
+**Indicador de Desempenho Acadêmico**
+
+Mede o desempenho acadêmico do estudante.
+""")
+
+        st.info("""
+### 🤝 IEG
+**Indicador de Engajamento**
+
+Avalia o nível de participação e envolvimento do aluno nas atividades.
+""")
+
+        st.info("""
+### 🎯 IAN
+**Indicador de Adequação ao Nível**
+
+Mede se o aluno está no nível esperado para sua etapa educacional.
+
+• 10 = Em Fase
+
+• 5 = Defasagem Moderada
+
+• 2,5 = Defasagem Severa
+""")
+
+    with col2:
+
+        st.info("""
+### 🪞 IAA
+**Indicador de Autoavaliação**
+
+Representa como o aluno percebe seu próprio desempenho.
+""")
+
+        st.info("""
+### 🤝 IPS
+**Indicador Psicossocial**
+
+Relacionado a aspectos socioemocionais e psicossociais.
+""")
+
+        st.info("""
+### 🧠 IPP
+**Indicador Psicopedagógico**
+
+Avalia aspectos de desenvolvimento psicopedagógico.
+""")
+
+        st.info("""
+### 🚀 IPV
+**Indicador de Ponto de Virada**
+
+Representa sinais de transformação e evolução do estudante.
+""")
+
+    st.divider()
+
+    st.subheader("💎 Classificação das Pedras")
+
+    col1,col2,col3,col4 = st.columns(4)
+
+    with col1:
+        st.success("""
+### ⚪ Quartzo
+
+Necessita maior desenvolvimento.
+""")
+
+    with col2:
+        st.info("""
+### 🔵 Ágata
+
+Desenvolvimento intermediário.
+""")
+
+    with col3:
+        st.warning("""
+### 🟣 Ametista
+
+Bom desempenho geral.
+""")
+
+    with col4:
+        st.error("""
+### 🟠 Topázio
+
+Grupo de destaque do programa.
+""")
+
+    st.divider()
+
+    st.subheader("⚠️ Classificações de Defasagem")
+
+    st.markdown("""
+🟢 **Em Fase**  
+Aluno dentro do nível esperado.
+
+🟡 **Defasagem Moderada**  
+Apresenta lacunas de aprendizagem que merecem atenção.
+
+🔴 **Defasagem Severa**  
+Necessita acompanhamento prioritário.
+""")
