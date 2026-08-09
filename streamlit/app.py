@@ -6,19 +6,19 @@ import joblib
 import plotly.express as px
 import plotly.graph_objects as go
 
-# ==========================================================
+# =============================================================
 # CONFIGURAÇÃO
-# ==========================================================
+# =============================================================
 
 st.set_page_config(
-    page_title="Passos Mágicos",
+    page_title="Passos Mágicos Analytics",
     page_icon="🎓",
     layout="wide"
 )
 
-# ==========================================================
-# CARREGAMENTO
-# ==========================================================
+# =============================================================
+# FUNÇÕES
+# =============================================================
 
 @st.cache_data
 def carregar_dados():
@@ -39,66 +39,166 @@ def carregar_modelo():
     return modelo, imputer
 
 
-df = carregar_dados()
-modelo, imputer = carregar_modelo()
+def comentario(
+    interpretacao,
+    insight,
+    recomendacao
+):
 
-# ==========================================================
+    with st.expander(
+        "📖 Comentários da análise",
+        expanded=False
+    ):
+
+        st.markdown(f"""
+### 🧠 Interpretação
+
+{interpretacao}
+
+### 💡 Insight
+
+{insight}
+
+### 🎯 Recomendação
+
+{recomendacao}
+""")
+
+
+# =============================================================
+# DADOS
+# =============================================================
+
+df = carregar_dados()
+
+modelo = None
+imputer = None
+
+try:
+    modelo, imputer = carregar_modelo()
+except:
+    pass
+
+# =============================================================
 # MENU
-# ==========================================================
+# =============================================================
 
 st.sidebar.title("🎓 Passos Mágicos")
 
 pagina = st.sidebar.radio(
-    "Navegação",
+    "Menu",
     [
-        "Dashboard Executivo",
-        "Análises",
-        "Predição de Risco"
+        "🏠 Visão Executiva",
+        "📊 Diagnóstico Educacional",
+        "🤖 Predição de Risco",
+        "💡 Insights Estratégicos"
     ]
 )
 
-# ==========================================================
-# DASHBOARD
-# ==========================================================
+# =============================================================
+# FILTROS GLOBAIS
+# =============================================================
 
-if pagina == "Dashboard Executivo":
+st.sidebar.markdown("---")
 
-    st.title("🎓 Dashboard Executivo")
+if "ANO" in df.columns:
+
+    anos = sorted(
+        df["ANO"].dropna().unique()
+    )
+
+    ano_selecionado = st.sidebar.selectbox(
+        "Ano",
+        ["Todos"] + list(anos)
+    )
+
+    if ano_selecionado != "Todos":
+
+        df = df[
+            df["ANO"] == ano_selecionado
+        ]
+
+# =============================================================
+# VISÃO EXECUTIVA
+# =============================================================
+
+if pagina == "🏠 Visão Executiva":
+
+    st.title(
+        "🎓 Passos Mágicos Analytics Platform"
+    )
 
     st.markdown(
         """
-        ### Datathon Pós-Tech FIAP
-
-        Plataforma de apoio para análise dos indicadores
-        educacionais da Passos Mágicos.
-        """
+Monitoramento Educacional e Predição de Risco
+"""
     )
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1,col2,col3,col4 = st.columns(4)
 
     col1.metric(
-        "Alunos Únicos",
+        "👨‍🎓 Alunos",
         df["RA"].nunique()
     )
 
     col2.metric(
-        "INDE Médio",
-        round(df["INDE"].mean(), 2)
+        "📈 INDE Médio",
+        round(df["INDE"].mean(),2)
     )
 
     col3.metric(
-        "IDA Médio",
-        round(df["IDA"].mean(), 2)
+        "📚 IDA Médio",
+        round(df["IDA"].mean(),2)
     )
 
     col4.metric(
-        "IAN Médio",
-        round(df["IAN"].mean(), 2)
+        "🎯 IAN Médio",
+        round(df["IAN"].mean(),2)
     )
 
     st.divider()
 
-    col1, col2 = st.columns(2)
+    evolucao = (
+        df.groupby("ANO")
+        [
+            [
+                "INDE",
+                "IDA",
+                "IEG",
+                "IAN",
+                "IPV"
+            ]
+        ]
+        .mean()
+        .reset_index()
+    )
+
+    fig = px.line(
+        evolucao,
+        x="ANO",
+        y=[
+            "INDE",
+            "IDA",
+            "IEG",
+            "IAN",
+            "IPV"
+        ],
+        markers=True,
+        title="Evolução dos Indicadores"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+    comentario(
+        "Os indicadores apresentaram comportamento positivo ao longo dos anos analisados.",
+        "O IAN foi o indicador com evolução mais consistente, sugerindo redução da defasagem educacional.",
+        "Priorizar iniciativas que acelerem a evolução dos alunos nas fases iniciais."
+    )
+
+    col1,col2 = st.columns(2)
 
     with col1:
 
@@ -145,7 +245,8 @@ if pagina == "Dashboard Executivo":
                 defasagem,
                 names="Classe",
                 values="Quantidade",
-                title="Perfil de Defasagem"
+                hole=0.5,
+                title="Perfil da Defasagem"
             )
 
             st.plotly_chart(
@@ -153,70 +254,31 @@ if pagina == "Dashboard Executivo":
                 use_container_width=True
             )
 
-    st.subheader("Evolução dos Indicadores")
+# =============================================================
+# DIAGNÓSTICO EDUCACIONAL
+# =============================================================
 
-    evolucao = (
-        df.groupby("ANO")[
-            [
-                "INDE",
-                "IDA",
-                "IEG",
-                "IAN"
-            ]
+elif pagina == "📊 Diagnóstico Educacional":
+
+    st.title(
+        "📊 Diagnóstico Educacional"
+    )
+
+    aba1,aba2,aba3 = st.tabs(
+        [
+            "Defasagem",
+            "Engajamento",
+            "Pedras"
         ]
-        .mean()
-        .reset_index()
     )
 
-    fig = px.line(
-        evolucao,
-        x="ANO",
-        y=[
-            "INDE",
-            "IDA",
-            "IEG",
-            "IAN"
-        ],
-        markers=True
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-# ==========================================================
-# ANALISES
-# ==========================================================
-
-elif pagina == "Análises":
-
-    st.title("📈 Análises dos Indicadores")
-
-    anos = sorted(
-        df["ANO"]
-        .dropna()
-        .unique()
-    )
-
-    ano = st.selectbox(
-        "Selecione o Ano",
-        anos
-    )
-
-    df_filtrado = df[
-        df["ANO"] == ano
-    ]
-
-    col1, col2 = st.columns(2)
-
-    with col1:
+    with aba1:
 
         fig = px.histogram(
-            df_filtrado,
-            x="INDE",
+            df,
+            x="IAN",
             nbins=20,
-            title=f"Distribuição do INDE ({ano})"
+            title="Distribuição do IAN"
         )
 
         st.plotly_chart(
@@ -224,13 +286,19 @@ elif pagina == "Análises":
             use_container_width=True
         )
 
-    with col2:
+        comentario(
+            "A maior parte dos alunos encontra-se em defasagem moderada ou em fase adequada.",
+            "Mais de 54% dos registros encontram-se em defasagem moderada.",
+            "Concentrar esforços nos alunos moderadamente defasados."
+        )
 
-        fig = px.box(
-            df_filtrado,
-            x="Pedra",
-            y="INDE",
-            title="INDE por Pedra"
+    with aba2:
+
+        fig = px.scatter(
+            df,
+            x="IEG",
+            y="IDA",
+            color="Pedra"
         )
 
         st.plotly_chart(
@@ -238,130 +306,84 @@ elif pagina == "Análises":
             use_container_width=True
         )
 
-    st.subheader("Engajamento x Desempenho")
+        comentario(
+            "Existe relação positiva entre engajamento e desempenho.",
+            "A correlação encontrada entre IEG e IDA foi aproximadamente 0,54.",
+            "Monitorar quedas no IEG como sinal precoce de risco."
+        )
 
-    fig = px.scatter(
-        df_filtrado,
-        x="IEG",
-        y="IDA",
-        color="Pedra",
-        trendline="ols"
-    )
+    with aba3:
 
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    st.subheader("Perfil das Pedras")
-
-    perfil_pedra = (
-        df.groupby("Pedra")[
+        perfil = (
+            df.groupby("Pedra")
             [
+                [
+                    "IDA",
+                    "IEG",
+                    "IAN",
+                    "IPV"
+                ]
+            ]
+            .mean()
+            .reset_index()
+        )
+
+        fig = px.bar(
+            perfil,
+            x="Pedra",
+            y=[
                 "IDA",
                 "IEG",
                 "IAN",
                 "IPV"
-            ]
-        ]
-        .mean()
-        .reset_index()
-    )
+            ],
+            barmode="group"
+        )
 
-    fig = px.bar(
-        perfil_pedra,
-        x="Pedra",
-        y=[
-            "IDA",
-            "IEG",
-            "IAN",
-            "IPV"
-        ],
-        barmode="group"
-    )
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
+        comentario(
+            "Os alunos Topázio se destacam em todos os indicadores.",
+            "IDA, IEG e IAN são os principais diferenciais dos melhores alunos.",
+            "Utilizar o perfil Topázio como benchmark."
+        )
 
-# ==========================================================
+# =============================================================
 # PREDIÇÃO
-# ==========================================================
+# =============================================================
 
-else:
+elif pagina == "🤖 Predição de Risco":
 
-    st.title("🤖 Predição de Risco")
-
-    st.markdown(
-        """
-        Informe os indicadores do estudante
-        para estimar a probabilidade de risco
-        de defasagem educacional.
-        """
+    st.title(
+        "🤖 Motor Preditivo"
     )
 
-    col1, col2 = st.columns(2)
+    if modelo is None:
+
+        st.error(
+            "Modelo não encontrado."
+        )
+
+        st.stop()
+
+    col1,col2 = st.columns(2)
 
     with col1:
 
-        ida = st.slider(
-            "IDA",
-            0.0,
-            10.0,
-            6.0
-        )
-
-        ieg = st.slider(
-            "IEG",
-            0.0,
-            10.0,
-            8.0
-        )
-
-        iaa = st.slider(
-            "IAA",
-            0.0,
-            10.0,
-            8.0
-        )
-
-        ips = st.slider(
-            "IPS",
-            0.0,
-            10.0,
-            6.0
-        )
+        ida = st.slider("IDA",0.0,10.0,6.0)
+        ieg = st.slider("IEG",0.0,10.0,8.0)
+        iaa = st.slider("IAA",0.0,10.0,8.0)
+        ips = st.slider("IPS",0.0,10.0,6.0)
 
     with col2:
 
-        ipp = st.slider(
-            "IPP",
-            0.0,
-            10.0,
-            7.0
-        )
-
-        ipv = st.slider(
-            "IPV",
-            0.0,
-            10.0,
-            7.0
-        )
-
-        idade = st.slider(
-            "Idade",
-            7,
-            25,
-            12
-        )
-
-        fase = st.slider(
-            "Fase",
-            0,
-            8,
-            3
-        )
+        ipp = st.slider("IPP",0.0,10.0,7.0)
+        ipv = st.slider("IPV",0.0,10.0,7.0)
+        idade = st.slider("Idade",7,25,12)
+        fase = st.slider("Fase",0,8,3)
 
     tempo = st.slider(
         "Tempo de Programa",
@@ -370,19 +392,21 @@ else:
         2
     )
 
-    if st.button("Calcular Risco"):
+    if st.button(
+        "Calcular Probabilidade"
+    ):
 
         entrada = pd.DataFrame({
 
-            "IDA": [ida],
-            "IEG": [ieg],
-            "IAA": [iaa],
-            "IPS": [ips],
-            "IPP": [ipp],
-            "IPV": [ipv],
-            "Idade": [idade],
-            "FASE_NUMERICA": [fase],
-            "TEMPO_PROGRAMA": [tempo]
+            "IDA":[ida],
+            "IEG":[ieg],
+            "IAA":[iaa],
+            "IPS":[ips],
+            "IPP":[ipp],
+            "IPV":[ipv],
+            "Idade":[idade],
+            "FASE_NUMERICA":[fase],
+            "TEMPO_PROGRAMA":[tempo]
 
         })
 
@@ -401,33 +425,26 @@ else:
 
         if prob >= 0.70:
 
-            st.error(
-                "🔴 ALTO RISCO"
-            )
+            st.error("🔴 ALTO RISCO")
 
         elif prob >= 0.40:
 
-            st.warning(
-                "🟡 MÉDIO RISCO"
-            )
+            st.warning("🟡 MÉDIO RISCO")
 
         else:
 
-            st.success(
-                "🟢 BAIXO RISCO"
-            )
+            st.success("🟢 BAIXO RISCO")
 
         fig = go.Figure(
             go.Indicator(
                 mode="gauge+number",
-                value=prob * 100,
-                title={"text": "Score de Risco"},
+                value=prob*100,
+                title={
+                    "text":"Score de Risco"
+                },
                 gauge={
-                    "axis": {
-                        "range": [0, 100]
-                    },
-                    "bar": {
-                        "color": "red"
+                    "axis":{
+                        "range":[0,100]
                     }
                 }
             )
@@ -437,3 +454,58 @@ else:
             fig,
             use_container_width=True
         )
+
+        comentario(
+            f"O modelo estimou risco de {prob:.1%}.",
+            "O Random Forest alcançou aproximadamente 81% de acurácia e ROC-AUC de 88,7%.",
+            "Utilizar este indicador para priorizar acompanhamentos."
+        )
+
+# =============================================================
+# INSIGHTS
+# =============================================================
+
+else:
+
+    st.title(
+        "💡 Insights Estratégicos"
+    )
+
+    st.success(
+        "✅ O principal impulsionador do INDE é o IDA."
+    )
+
+    st.success(
+        "✅ O engajamento influencia diretamente desempenho e IPV."
+    )
+
+    st.success(
+        "✅ O IPP foi o principal impulsionador do IPV."
+    )
+
+    st.success(
+        "✅ O modelo identifica aproximadamente 89% dos alunos em risco."
+    )
+
+    st.success(
+        "✅ Alunos Topázio apresentam desempenho superior em todos os indicadores."
+    )
+
+    st.warning(
+        """
+44,5% dos alunos tendem a superestimar seu próprio desempenho,
+indicando oportunidade para ações de autoconhecimento acadêmico.
+"""
+    )
+
+    st.info(
+        """
+Recomendações:
+
+1. Monitorar continuamente o IEG
+2. Implementar alerta preditivo
+3. Atuar nas fases iniciais
+4. Reforçar acompanhamento psicopedagógico
+5. Trabalhar percepção acadêmica dos alunos
+"""
+    )
