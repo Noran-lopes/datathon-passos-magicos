@@ -514,7 +514,7 @@ Recomendações:
 # DICIONÁRIO
 # =============================================================
 
-elif pagina == "📚 Dicionário PEDE":
+else pagina == "📚 Dicionário PEDE":
 
     st.title("📚 Dicionário dos Indicadores PEDE")
 
